@@ -1,0 +1,218 @@
+{
+  "chromium-main": [
+    {
+      "test": "extension loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "test": "first request of the page (document_start) is mocked",
+      "ok": true,
+      "detail": "{'source': 'stubgate', 'users': []}"
+    },
+    {
+      "test": "request made inside an iframe is mocked",
+      "ok": true,
+      "detail": "{'source': 'stubgate', 'users': []}"
+    },
+    {
+      "test": "fetch: body, status, header and url",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "XMLHttpRequest (responseType json)",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}}"
+    },
+    {
+      "test": "POST returns the simulated 500",
+      "ok": true,
+      "detail": "{'status': 500, 'json': {'error': 'boom'}}"
+    },
+    {
+      "test": "delay of 600 ms is applied (regex rule)",
+      "ok": true,
+      "detail": "{'ms': 601, 'json': {'source': 'stubgate', 'slow': True}}"
+    },
+    {
+      "test": "non-matching URL goes to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'path': '/api/other'}, 'url': 'http://localhost:8765/api/other'}"
+    },
+    {
+      "test": "cross-origin URL is mocked (real one would be blocked by CORS)",
+      "ok": true,
+      "detail": "{'status': 200, 'header': None, 'json': {'source': 'stubgate-cross'}, 'url': 'http://127.0.0.1:8765/api/users'}"
+    },
+    {
+      "test": "request made from a web worker (KNOWN LIMITATION: real response expected)",
+      "ok": true,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "rule edited while the page is open applies without reload",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': ['updated']}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "global pause sends requests to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "page with CSP script-src 'self': first request is mocked",
+      "ok": true,
+      "detail": "{'source': 'stubgate', 'users': ['updated']}"
+    },
+    {
+      "test": "hit counter is updated in storage",
+      "ok": true,
+      "detail": "{'r1': 6, 'r2': 1, 'r3': 1, 'r4': 1}"
+    }
+  ],
+  "inline-tag": [
+    {
+      "test": "extension loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "test": "first request of the page (document_start) is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "request made inside an iframe is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "fetch: body, status, header and url",
+      "ok": false,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "XMLHttpRequest (responseType json)",
+      "ok": false,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}}"
+    },
+    {
+      "test": "POST returns the simulated 500",
+      "ok": false,
+      "detail": "{'status': 201, 'json': {'source': 'real'}}"
+    },
+    {
+      "test": "delay of 600 ms is applied (regex rule)",
+      "ok": false,
+      "detail": "{'ms': 3, 'json': {'source': 'real', 'path': '/api/slow'}}"
+    },
+    {
+      "test": "non-matching URL goes to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'path': '/api/other'}, 'url': 'http://localhost:8765/api/other'}"
+    },
+    {
+      "test": "cross-origin URL is mocked (real one would be blocked by CORS)",
+      "ok": false,
+      "detail": "{'error': 'Page.evaluate: TypeError: Failed to fetch\\n    at eval (eval at evaluate (:311:30), <anonymous>:1:32)\\n    at UtilityScrip'}"
+    },
+    {
+      "test": "request made from a web worker (KNOWN LIMITATION: real response expected)",
+      "ok": true,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "rule edited while the page is open applies without reload",
+      "ok": false,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "global pause sends requests to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "page with CSP script-src 'self': first request is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "hit counter is updated in storage",
+      "ok": false,
+      "detail": "{}"
+    }
+  ],
+  "src-tag": [
+    {
+      "test": "extension loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "test": "first request of the page (document_start) is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "request made inside an iframe is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "fetch: body, status, header and url",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "XMLHttpRequest (responseType json)",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}}"
+    },
+    {
+      "test": "POST returns the simulated 500",
+      "ok": true,
+      "detail": "{'status': 500, 'json': {'error': 'boom'}}"
+    },
+    {
+      "test": "delay of 600 ms is applied (regex rule)",
+      "ok": true,
+      "detail": "{'ms': 601, 'json': {'source': 'stubgate', 'slow': True}}"
+    },
+    {
+      "test": "non-matching URL goes to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'path': '/api/other'}, 'url': 'http://localhost:8765/api/other'}"
+    },
+    {
+      "test": "cross-origin URL is mocked (real one would be blocked by CORS)",
+      "ok": true,
+      "detail": "{'status': 200, 'header': None, 'json': {'source': 'stubgate-cross'}, 'url': 'http://127.0.0.1:8765/api/users'}"
+    },
+    {
+      "test": "request made from a web worker (KNOWN LIMITATION: real response expected)",
+      "ok": true,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "rule edited while the page is open applies without reload",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': ['updated']}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "global pause sends requests to the real server",
+      "ok": true,
+      "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+    },
+    {
+      "test": "page with CSP script-src 'self': first request is mocked",
+      "ok": false,
+      "detail": "{'source': 'real', 'users': [1, 2, 3]}"
+    },
+    {
+      "test": "hit counter is updated in storage",
+      "ok": true,
+      "detail": "{'r1': 3, 'r2': 1, 'r3': 1, 'r4': 1}"
+    }
+  ]
+}

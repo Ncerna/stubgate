@@ -1,0 +1,473 @@
+#!/usr/bin/env python3
+"""Builds the three Stubgate UI screens as HTML and renders them to PNG."""
+import pathlib
+import subprocess
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent / 'ui'
+SRC = ROOT / 'src'
+SRC.mkdir(parents=True, exist_ok=True)
+
+CSS = """
+:root{--bg:#0B1220;--panel:#111827;--surface:#172033;--surface2:#1E2A42;--border:#27344F;
+--text:#E5E7EB;--muted:#94A3B8;--faint:#64748B;--accent:#2DD4BF;--accent-dim:rgba(45,212,191,.14);
+--get:#4ADE80;--post:#FBBF24;--put:#60A5FA;--patch:#C084FC;--del:#F87171;
+--mono:'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:800px;height:600px;overflow:hidden}
+body{background:var(--panel);color:var(--text);font:13px/1.4 Inter,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.i.sm{width:14px;height:14px}
+.app{display:flex;flex-direction:column;height:600px}
+.rel{position:relative}
+
+/* toolbar */
+.toolbar{height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 10px;border-bottom:1px solid var(--border)}
+.tb-left,.tb-right{display:flex;align-items:center;gap:2px}
+.brand{display:flex;align-items:center;gap:8px;margin-left:6px;font-weight:600;font-size:13.5px}
+.ibtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:var(--muted);position:relative;flex:none}
+.ibtn.on{background:var(--accent-dim);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(45,212,191,.45)}
+.ibtn.paused{background:rgba(248,113,113,.12);color:var(--del);box-shadow:inset 0 0 0 1px rgba(248,113,113,.45)}
+.ibtn.primary{background:var(--accent);color:#06241F;margin:0 2px}
+.ibtn.focus{box-shadow:0 0 0 3px rgba(45,212,191,.35)}
+.sep{width:1px;height:20px;background:var(--border);margin:0 6px}
+.tip{position:absolute;top:42px;right:-6px;white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11.5px;color:var(--text);z-index:9}
+
+/* tabs */
+.tabs{height:38px;flex:none;display:flex;align-items:flex-end;padding:0 12px;border-bottom:1px solid var(--border)}
+.tab{height:38px;padding:0 14px;display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:500;border-bottom:2px solid transparent}
+.tab.active{color:var(--accent);border-color:var(--accent)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--get)}
+.count{font-size:11px;font-weight:600;background:var(--surface2);color:var(--muted);padding:1px 7px;border-radius:999px}
+
+/* rules */
+.rules{flex:1;overflow:hidden}
+.rule{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:6px;padding:10px 14px 10px 10px;border-bottom:1px solid var(--border)}
+.rules .rule{height:76px}
+.rule.off .name,.rule.off .url{color:var(--faint)}
+.chev{color:var(--faint);display:grid;place-items:center}
+.main{min-width:0}
+.meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;font-weight:500}
+.name{color:var(--text)}
+.chip{display:inline-flex;align-items:center;gap:4px;font:600 10.5px var(--mono);padding:1px 6px;border-radius:4px;background:var(--surface2);color:var(--muted)}
+.chip.ok{background:rgba(74,222,128,.12);color:var(--get)}
+.chip.err{background:rgba(248,113,113,.14);color:var(--del)}
+.chip.draft{background:var(--accent-dim);color:var(--accent)}
+.urlbox{display:flex;align-items:center;gap:8px;height:32px;border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:0 6px 0 10px;font:12px var(--mono)}
+.url{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph{flex:1;color:var(--faint);font-family:Inter,system-ui,sans-serif;font-size:12.5px}
+.regex{font:11px var(--mono);color:var(--muted);border:1px solid var(--border);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 6px;background:var(--surface)}
+.regex.on{color:var(--accent);border-color:rgba(45,212,191,.5);background:var(--accent-dim)}
+.right{display:flex;align-items:center;gap:12px}
+.method{width:58px;text-align:center;font:700 11px var(--mono);padding:5px 0;border-radius:6px}
+.method.get{color:var(--get);background:rgba(74,222,128,.12)}
+.method.post{color:var(--post);background:rgba(251,191,36,.12)}
+.method.put{color:var(--put);background:rgba(96,165,250,.12)}
+.method.delete{color:var(--del);background:rgba(248,113,113,.12)}
+.hits{width:22px;text-align:right;font:12px var(--mono);color:var(--faint)}
+.hits.hot{color:var(--accent)}
+.toggle{width:34px;height:20px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);position:relative;flex:none}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--faint)}
+.toggle.on{background:var(--accent);border-color:var(--accent)}
+.toggle.on::after{left:16px;background:#06241F}
+.kebab{color:var(--muted);display:grid;place-items:center;width:24px;height:24px}
+.statusbar{height:32px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+.statusbar .l{display:flex;align-items:center;gap:8px}
+
+/* editor card (screen 03) */
+.body3{flex:1;padding:12px 14px 14px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.body3 .rule{padding:0;border:0;grid-template-columns:26px 1fr auto}
+.fields{display:grid;grid-template-columns:112px 128px 124px 1fr 130px;gap:10px;padding-left:32px;align-items:start}
+.field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.input,.select{display:flex;align-items:center;justify-content:space-between;gap:6px;height:34px;border:1px solid var(--border);background:var(--bg);border-radius:8px;padding:0 10px;font:12.5px var(--mono)}
+.input .hint{font:11px Inter,system-ui,sans-serif;color:var(--faint)}
+.input .ph2{font:12.5px Inter,system-ui,sans-serif;color:var(--faint)}
+.select{font-family:Inter,system-ui,sans-serif;font-weight:500;color:var(--text)}
+.select .i{color:var(--muted);width:15px;height:15px}
+.select.mock{color:var(--accent)}
+.etabs{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border);padding-left:32px;margin-top:2px}
+.etabs .t{display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;color:var(--muted);font-weight:500;border-bottom:2px solid transparent}
+.etabs .t.active{color:var(--accent);border-color:var(--accent)}
+.etabs .tools{display:flex;gap:2px;margin-bottom:2px;color:var(--muted)}
+.etabs .tools .ibtn{width:30px;height:30px}
+.etabs .tl{display:flex}
+.code{flex:1;margin-left:32px;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;background:var(--bg);overflow:hidden;min-height:0}
+.lines{flex:1;padding:12px 0;font:12.5px/1.75 var(--mono);display:grid;grid-template-columns:44px 1fr;align-content:start}
+.ln{color:#475569;text-align:right;padding-right:14px;user-select:none}
+.k{color:#93C5FD}.s{color:#86EFAC}.n{color:#FCA5A5}.p{color:var(--muted)}
+.code-foot{height:32px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted)}
+.valid{display:flex;align-items:center;gap:6px;color:var(--get)}
+
+/* annotation markers (screen 03) */
+.mk{display:none;position:absolute;top:-9px;left:-9px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#06241F;font:700 10.5px/1 Inter,system-ui,sans-serif;place-items:center;z-index:6;box-shadow:0 0 0 2px var(--panel)}
+.annot .mk{display:grid}
+.annot .field label{padding-left:22px}
+.annot .field .mk{top:-2px;left:0}
+.annot .right .mk{top:-24px;left:50%;transform:translateX(-50%)}
+.annot .etabs .tools .mk{top:-14px;left:-6px}
+
+/* screen 02 (toolbar detail) */
+body.doc{background:var(--bg)}
+.doc .wrap{padding:22px 24px;display:flex;flex-direction:column;gap:16px;height:600px}
+.eyebrow{font:600 11px var(--mono);color:var(--accent);letter-spacing:.08em}
+.h1{font-size:19px;font-weight:650;margin-top:2px}
+.tbcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;height:86px;display:flex;align-items:flex-start;justify-content:space-between;padding:10px 12px 0 10px}
+.slots{display:flex;gap:2px}
+.slot{position:relative;width:34px;height:60px;flex:none}
+.slot .ibtn{position:absolute;top:0;left:0}
+.badge{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#06241F;font:700 11px/1 Inter,system-ui,sans-serif;display:grid;place-items:center;flex:none}
+.slot .badge{position:absolute;top:40px;left:7px}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.li{display:grid;grid-template-columns:20px 22px 1fr;gap:10px;align-items:center;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;min-height:54px}
+.li .ico{color:var(--muted)}
+.li b{display:block;font-size:13px;font-weight:600;margin-bottom:1px}
+.li div span{font-size:12px;color:var(--muted);line-height:1.4}
+.states{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.doc .wrap{gap:14px}
+.st{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:center}
+.st b{display:block;font-size:12.5px;margin-bottom:2px}
+.st span{font-size:12px;color:var(--muted)}
+.banner{grid-column:1 / -1;font-size:12px;border-radius:8px;padding:6px 10px;background:rgba(251,191,36,.12);color:#FCD34D;border:1px solid rgba(251,191,36,.35)}
+
+/* menus */
+.app{position:relative}
+.menu{position:absolute;z-index:30;min-width:212px;padding:6px;background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+.mi{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:7px;font-size:13px;color:var(--text)}
+.mi .i{color:var(--muted);width:17px;height:17px}
+.mi .kbd{margin-left:auto;padding-left:24px;font:600 11px var(--mono);color:var(--faint)}
+.mi.hover{background:var(--surface2)}
+.mi.danger,.mi.danger .i{color:var(--del)}
+.msep{height:1px;background:var(--border);margin:6px 4px}
+.ibtn.open{background:var(--surface2);color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+.kebab.open{background:var(--surface2);color:var(--text);border-radius:6px}
+
+/* feedback board (screen 06) */
+.cap{font:600 11px var(--mono);color:var(--muted);letter-spacing:.06em;margin-bottom:8px;text-transform:uppercase}
+.dlg{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+.dlg h3{font-size:15px;font-weight:650;margin-bottom:3px}
+.dlg p{font-size:12px;color:var(--muted);line-height:1.45}
+.okc{width:28px;height:28px;border-radius:50%;background:rgba(74,222,128,.14);color:var(--get);display:grid;place-items:center;flex:none}
+.file{display:flex;align-items:center;gap:10px;margin:14px 0 12px;padding:10px 12px;border:1px solid rgba(74,222,128,.4);background:rgba(74,222,128,.07);border-radius:9px}
+.file b{display:block;font:600 12px var(--mono);color:var(--text)}
+.file span.s2{font-size:11.5px;color:var(--get)}
+.opt{display:grid;grid-template-columns:18px 1fr;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;background:var(--bg)}
+.opt.sel{border-color:rgba(45,212,191,.55);background:var(--accent-dim)}
+.radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--faint);margin-top:2px;position:relative}
+.opt.sel .radio{border-color:var(--accent)}
+.opt.sel .radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+.opt b{display:block;font-size:12.5px;font-weight:600}
+.opt span.s2{font-size:11.5px;color:var(--muted)}
+.btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.btn{height:34px;padding:0 14px;border-radius:8px;display:inline-flex;align-items:center;font-weight:600;font-size:12.5px;border:1px solid var(--border);color:var(--text);background:var(--surface)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06241F}
+.btn.danger{background:rgba(248,113,113,.14);border-color:rgba(248,113,113,.5);color:var(--del)}
+.toast{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.toast b{display:block;font-size:12.5px}
+.toast span.s2{font:11.5px var(--mono);color:var(--muted)}
+.board{display:grid;grid-template-columns:400px 1fr;gap:16px;flex:1;min-height:0}
+.col{display:flex;flex-direction:column;gap:16px}
+.note{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.45}
+"""
+
+SPRITE = """<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+<symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="18.5" r="1.5" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-format" viewBox="0 0 24 24"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></symbol>
+<symbol id="i-collapse" viewBox="0 0 24 24"><path d="m7 9 5-5 5 5M7 15l5 5 5-5"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5V9H15"/></symbol>
+<symbol id="i-to-top" viewBox="0 0 24 24"><path d="M5 4h14M12 20V8M7 12l5-5 5 5"/></symbol>
+<symbol id="i-to-bottom" viewBox="0 0 24 24"><path d="M5 20h14M12 4v12M7 12l5 5 5-5"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></symbol>
+</svg>"""
+
+MARK_SVG = ('<svg viewBox="0 0 128 128" width="22" height="22" aria-hidden="true">'
+            '<rect x="2" y="2" width="124" height="124" rx="24" fill="#0B1220" stroke="#27344F" stroke-width="4"/>'
+            '<circle cx="24" cy="64" r="14" fill="#fff"/>'
+            '<path d="M38 64H50" stroke="#fff" stroke-width="10"/>'
+            '<path d="M78 64H90" stroke="#2DD4BF" stroke-width="10"/>'
+            '<rect x="46" y="46" width="36" height="36" rx="5" transform="rotate(45 64 64)" fill="#2DD4BF"/>'
+            '<circle cx="104" cy="64" r="14" fill="#2DD4BF"/></svg>')
+
+
+def ic(name, cls=''):
+    return f'<svg class="i {cls}"><use href="#i-{name}"/></svg>'
+
+
+def mk(n):
+    return f'<span class="mk">{n}</span>'
+
+
+def page(body, body_class=''):
+    return (f'<!doctype html><html><head><meta charset="utf-8"><title>Stubgate</title>'
+            f'<style>{CSS}</style></head><body class="{body_class}">{SPRITE}{body}</body></html>')
+
+
+def toolbar(state='on', plus_focus=False, tip=None, more_open=False):
+    g = 'on' if state == 'on' else 'paused'
+    plus_cls = 'ibtn primary focus' if plus_focus else 'ibtn primary'
+    tip_html = f'<span class="tip">{tip}</span>' if tip else ''
+    return f'''<header class="toolbar">
+  <div class="tb-left"><span class="ibtn">{ic('menu')}</span><span class="brand">{MARK_SVG}Stubgate</span></div>
+  <div class="tb-right">
+    <span class="ibtn">{ic('record')}</span>
+    <span class="ibtn">{ic('search')}</span>
+    <span class="ibtn">{ic('trash')}</span>
+    <span class="sep"></span>
+    <span class="ibtn {g}">{ic('power')}</span>
+    <span class="rel"><span class="{plus_cls}">{ic('plus')}</span>{tip_html}</span>
+    <span class="sep"></span>
+    <span class="ibtn">{ic('sliders')}</span>
+    <span class="ibtn {'open' if more_open else ''}">{ic('more')}</span>
+  </div>
+</header>'''
+
+
+def tabs(count):
+    return (f'<div class="tabs"><div class="tab active"><span class="dot"></span>Rules'
+            f'<span class="count">{count}</span></div></div>')
+
+
+# ---------------------------------------------------------------- screen 01
+RULES = [
+    ('user-profile', 200, 0, 'https://api.ejemplo.com/v1/users/me', False, 'get', 12, True),
+    ('create-order', 201, 800, 'https://api.ejemplo.com/v1/orders', False, 'post', 3, True),
+    ('payment-timeout', 504, 8000, 'https://pay.ejemplo.com/v1/charge', False, 'post', 1, True),
+    ('list-products-empty', 200, 0, 'https://api.ejemplo.com/v1/products?page=.*', True, 'get', 7, True),
+    ('update-address', 422, 0, 'https://api.ejemplo.com/v1/customers/.*/address', True, 'put', 0, False),
+    ('delete-session', 204, 0, 'https://api.ejemplo.com/v1/session', False, 'delete', 0, False),
+]
+
+
+def rule_row(name, status, delay, url, regex, method, hits, enabled, kebab_open=False):
+    chip_cls = 'ok' if status < 400 else 'err'
+    delay_chip = f'<span class="chip">{ic("clock", "sm")}{delay} ms</span>' if delay else ''
+    regex_cls = 'regex on' if regex else 'regex'
+    return f'''<div class="rule {'' if enabled else 'off'}">
+  <div class="chev">{ic('chev-r')}</div>
+  <div class="main">
+    <div class="meta"><span class="name">{name}</span><span class="chip {chip_cls}">{status}</span>{delay_chip}</div>
+    <div class="urlbox"><span class="url">{url}</span><span class="{regex_cls}">.*</span></div>
+  </div>
+  <div class="right">
+    <span class="method {method}">{method.upper()}</span>
+    <span class="hits {'hot' if hits else ''}">{hits}</span>
+    <span class="toggle {'on' if enabled else ''}"></span>
+    <span class="kebab {'open' if kebab_open else ''}">{ic('more')}</span>
+  </div>
+</div>'''
+
+
+def screen01():
+    rows = ''.join(rule_row(*r) for r in RULES)
+    enabled = sum(1 for r in RULES if r[7])
+    body = f'''<div class="app">
+{toolbar('on')}
+{tabs(len(RULES))}
+<main class="rules">{rows}</main>
+<footer class="statusbar">
+  <span class="l"><span class="dot"></span>Interception active</span>
+  <span>{enabled} of {len(RULES)} rules enabled</span>
+</footer></div>'''
+    return page(body)
+
+
+# ---------------------------------------------------------------- screen 02
+FUNCS = [
+    ('menu', 'Menu', 'Navigation menu (to be designed).'),
+    ('record', 'Record', 'Capture calls and turn them into rules.'),
+    ('search', 'Search', 'Filter rules by name, URL, method or label.'),
+    ('trash', 'Delete', 'Delete all or disabled rules. Asks first.'),
+    ('power', 'Global switch', 'Pause or resume all rules at once.'),
+    ('plus', 'New rule', 'Create a rule and open the editor.'),
+    ('sliders', 'Settings', 'Language, theme and rule defaults.'),
+    ('more', 'More', 'Import, export and clear cache.'),
+]
+
+
+def screen02():
+    slots = ''
+    for n, (icon, _name, _d) in enumerate(FUNCS, 1):
+        cls = 'ibtn'
+        if icon == 'power':
+            cls += ' on'
+        if icon == 'plus':
+            cls += ' primary'
+        slots += f'<div class="slot"><span class="{cls}">{ic(icon)}</span><span class="badge">{n}</span></div>'
+    legend = ''.join(
+        f'<div class="li"><span class="badge">{n}</span><span class="ico">{ic(icon)}</span>'
+        f'<div><b>{name}</b><span>{desc}</span></div></div>'
+        for n, (icon, name, desc) in enumerate(FUNCS, 1))
+    body = f'''<div class="wrap">
+  <div><div class="eyebrow">SCREEN 02</div><div class="h1">Toolbar: 8 functions</div></div>
+  <div class="tbcard"><div class="slots">{slots}</div></div>
+  <div class="legend">{legend}</div>
+  <div class="states">
+    <div class="st"><span class="ibtn on">{ic('power')}</span><div><b>Global switch: active</b><span>Rules are applied to matching requests.</span></div></div>
+    <div class="st"><span class="ibtn paused">{ic('power')}</span><div><b>Global switch: paused</b><span>Requests go to the real server.</span></div></div>
+    <div class="banner" style="grid-column:1 / -1">When paused, the panel shows: <b>Interception paused. Your rules are kept but not applied.</b></div>
+  </div>
+</div>'''
+    return page(body, 'doc')
+
+
+# ---------------------------------------------------------------- screen 03
+def screen03(annotated=False):
+    editor = [
+        ('1', '<span class="p">{</span>'),
+        ('2', '  <span class="k">"message"</span><span class="p">:</span> <span class="s">"OK"</span><span class="p">,</span>'),
+        ('3', '  <span class="k">"data"</span><span class="p">:</span> <span class="p">[]</span>'),
+        ('4', '<span class="p">}</span>'),
+    ]
+    lines = ''.join(f'<div class="ln">{n}</div><div class="cl">{t.replace("  ", "&nbsp;&nbsp;")}</div>' for n, t in editor)
+    body = f'''<div class="app">
+{toolbar('on', plus_focus=True, tip='New rule')}
+{tabs(RULES.__len__() + 1)}
+<main class="body3">
+  <div class="rule">
+    <div class="chev">{ic('chev-d')}</div>
+    <div class="main">
+      <div class="meta"><span class="name" style="color:var(--muted)">New rule</span><span class="chip draft">draft</span></div>
+      <div class="urlbox rel">{mk(1)}<span class="ph">URL to match, or paste a cURL command</span><span class="regex">.*</span></div>
+    </div>
+    <div class="right">
+      <span class="method get">GET</span>
+      <span class="toggle on rel">{mk(10)}</span>
+      <span class="kebab rel">{mk(11)}{ic('more')}</span>
+    </div>
+  </div>
+
+  <div class="fields">
+    <div class="field rel">{mk(2)}<label>HTTP method</label><div class="select"><span>GET</span>{ic('chev-d')}</div></div>
+    <div class="field rel">{mk(3)}<label>Status code</label><div class="input"><span>200</span><span class="hint">OK</span></div></div>
+    <div class="field rel">{mk(4)}<label>Delay by (ms)</label><div class="input"><span>0</span><span class="hint">ms</span></div></div>
+    <div class="field rel">{mk(5)}<label>Label</label><div class="input"><span class="ph2">Optional name</span></div></div>
+    <div class="field rel">{mk(6)}<label>Rule type</label><div class="select mock"><span>Mock</span>{ic('chev-d')}</div></div>
+  </div>
+
+  <div class="etabs">
+    <div class="tl">
+      <div class="t active rel">{mk(7)}Response body</div>
+      <div class="t rel">{mk(8)}Response headers<span class="count">1</span></div>
+      <div class="t rel">{mk(9)}Notes</div>
+    </div>
+    <div class="tools rel">{mk(12)}<span class="ibtn">{ic('format')}</span><span class="ibtn">{ic('collapse')}</span><span class="ibtn">{ic('copy')}</span></div>
+  </div>
+
+  <div class="code">
+    <div class="lines">{lines}</div>
+    <div class="code-foot"><span class="valid">{ic('check', 'sm')}Valid JSON</span><span>Saved automatically</span></div>
+  </div>
+</main></div>'''
+    return page(body, 'annot' if annotated else '')
+
+
+# ------------------------------------------------------ screens 04, 05, 06
+def mi(icon, label, kbd='', cls=''):
+    k = f'<span class="kbd">{kbd}</span>' if kbd else ''
+    return f'<div class="mi {cls}">{ic(icon)}<span>{label}</span>{k}</div>'
+
+
+def panel(menu_html='', more_open=False, open_idx=None):
+    rows = ''.join(rule_row(*r, kebab_open=(i == open_idx)) for i, r in enumerate(RULES))
+    enabled = sum(1 for r in RULES if r[7])
+    body = f'''<div class="app">
+{toolbar('on', more_open=more_open)}
+{tabs(len(RULES))}
+<main class="rules">{rows}</main>
+<footer class="statusbar">
+  <span class="l"><span class="dot"></span>Interception active</span>
+  <span>{enabled} of {len(RULES)} rules enabled</span>
+</footer>
+{menu_html}</div>'''
+    return page(body)
+
+
+def screen04():
+    menu = ('<div class="menu" style="top:48px;right:10px">'
+            + mi('upload', 'Import')
+            + mi('download', 'Export', cls='hover')
+            + '<div class="msep"></div>'
+            + mi('refresh', 'Clear cache')
+            + '</div>')
+    return panel(menu, more_open=True)
+
+
+def screen05():
+    menu = ('<div class="menu" style="top:216px;right:14px;min-width:200px">'
+            + mi('trash', 'Delete', 'D', 'danger')
+            + '<div class="msep"></div>'
+            + mi('copy', 'Duplicate', 'C', 'hover')
+            + mi('to-top', 'Move to top', 'T')
+            + mi('to-bottom', 'Move to bottom', 'B')
+            + '</div>')
+    return panel(menu, open_idx=1)
+
+
+def screen06():
+    body = f'''<div class="wrap">
+  <div><div class="eyebrow">SCREEN 06</div><div class="h1">Import, Export and Clear cache: feedback</div></div>
+  <div class="board">
+    <div>
+      <div class="cap">Import · dialog</div>
+      <div class="dlg">
+        <h3>Import rules</h3>
+        <p>Load rules from a Stubgate .json file.</p>
+        <div class="file"><span class="okc">{ic('file', 'sm')}</span><div><b>stubgate-rules-2026-11-23.json</b><span class="s2">6 rules found · valid file</span></div></div>
+        <div class="opt sel"><span class="radio"></span><div><b>Add to existing rules</b><span class="s2">Keeps your current rules. Duplicate names are renamed.</span></div></div>
+        <div class="opt"><span class="radio"></span><div><b>Replace all rules</b><span class="s2">Deletes your current rules before importing.</span></div></div>
+        <div class="btns"><span class="btn">Cancel</span><span class="btn primary">Import 6 rules</span></div>
+      </div>
+      <div class="note">Opens after choosing a file. If the file is not valid, the dialog shows the error and the Import button stays disabled.</div>
+    </div>
+    <div class="col">
+      <div>
+        <div class="cap">Export · confirmation</div>
+        <div class="toast"><span class="okc">{ic('check', 'sm')}</span><div><b>6 rules exported</b><span class="s2">stubgate-rules-2026-11-23.json</span></div></div>
+        <div class="note">The file downloads right away. This message shows at the bottom of the panel for 3 seconds.</div>
+      </div>
+      <div>
+        <div class="cap">Clear cache · confirmation</div>
+        <div class="dlg">
+          <h3>Clear cache?</h3>
+          <p>Removes recorded requests and temporary data. Your rules are not deleted.</p>
+          <div class="btns"><span class="btn">Cancel</span><span class="btn danger">Clear cache</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>'''
+    return page(body, 'doc')
+
+
+SCREENS = {
+    '01-rules-panel': screen01(),
+    '02-toolbar': screen02(),
+    '03-new-rule': screen03(False),
+    '03-new-rule-annotated': screen03(True),
+    '04-more-menu': screen04(),
+    '05-rule-menu': screen05(),
+    '06-import-export-feedback': screen06(),
+}
+
+for name, html in SCREENS.items():
+    src = SRC / f'{name}.html'
+    src.write_text(html, encoding='utf-8')
+    png = ROOT / f'{name}.png'
+    subprocess.run([
+        'google-chrome', '--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars',
+        '--force-device-scale-factor=2', '--window-size=800,600',
+        f'--screenshot={png}', f'file://{src}',
+    ], check=True, capture_output=True)
+    print('rendered', png)

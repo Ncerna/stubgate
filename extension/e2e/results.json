@@ -1,0 +1,97 @@
+[
+  {
+    "test": "extension loads",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "first request of the page is mocked",
+    "ok": true,
+    "detail": "{'source': 'stubgate', 'users': []}"
+  },
+  {
+    "test": "request inside an iframe is mocked",
+    "ok": true,
+    "detail": "{'source': 'stubgate', 'users': []}"
+  },
+  {
+    "test": "fetch: status, header, body, url",
+    "ok": true,
+    "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}, 'url': 'http://localhost:8765/api/users'}"
+  },
+  {
+    "test": "XMLHttpRequest (responseType json)",
+    "ok": true,
+    "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': []}}"
+  },
+  {
+    "test": "POST rule answers 500",
+    "ok": true,
+    "detail": "{'status': 500, 'json': {'error': 'boom'}}"
+  },
+  {
+    "test": "delay is applied (>= 550 ms)",
+    "ok": true,
+    "detail": "{'ms': 601, 'json': {'source': 'stubgate', 'slow': True}}"
+  },
+  {
+    "test": "cross-origin request is mocked",
+    "ok": true,
+    "detail": "{'status': 200, 'header': None, 'json': {'source': 'stubgate-cross'}, 'url': 'http://127.0.0.1:8765/api/users'}"
+  },
+  {
+    "test": "204 answers with an empty body",
+    "ok": true,
+    "detail": "{'status': 204, 'text': ''}"
+  },
+  {
+    "test": "rule with invalid status is ignored (real server answers)",
+    "ok": true,
+    "detail": "{'status': 200}"
+  },
+  {
+    "test": "disabled rule is ignored",
+    "ok": true,
+    "detail": "{'status': 200}"
+  },
+  {
+    "test": "iframe with srcdoc is mocked",
+    "ok": true,
+    "detail": "{'source': 'stubgate', 'users': []}"
+  },
+  {
+    "test": "iframe about:blank (created from the page) is mocked",
+    "ok": true,
+    "detail": "{'source': 'stubgate', 'users': []}"
+  },
+  {
+    "test": "request with no matching rule reaches the real server",
+    "ok": true,
+    "detail": "{'status': 200}"
+  },
+  {
+    "test": "live edit applies without reload",
+    "ok": true,
+    "detail": "{'status': 200, 'header': 'stubgate', 'json': {'source': 'stubgate', 'users': ['new']}, 'url': 'http://localhost:8765/api/users'}"
+  },
+  {
+    "test": "global pause: the real server answers",
+    "ok": true,
+    "detail": "{'status': 200, 'header': 'real', 'json': {'source': 'real', 'users': [1, 2, 3]}, 'url': 'http://localhost:8765/api/users'}"
+  },
+  {
+    "test": "hits are counted in stats (and not in the rules)",
+    "ok": true,
+    "detail": "{'stats': {'0f318ada481d4cb5a4c4a7d5182eccae': 1, '701b5eae0fa648ba8b9b20f4951370af': 1, 'a6b74eb1791c4e0284faacbed3e2a407': 1, 'cc3cbb8028a6451585ceb4549f587c7b': 1, 'd5ed043cd5574e7797cfc5e119b543a6': 7}}"
+  },
+  {
+    "test": "rules are not rewritten by counting",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "test": "after reload the first request is still mocked",
+    "ok": true,
+    "detail": "{'source': 'stubgate', 'users': ['new']}"
+  }
+]

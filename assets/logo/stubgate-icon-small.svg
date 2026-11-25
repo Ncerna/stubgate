@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Stubgate icon (small sizes)">
+  <rect x="0" y="0" width="128" height="128" rx="24" fill="#111827"/>
+  <!-- client node (solid) -->
+  <circle cx="24" cy="64" r="14" fill="#FFFFFF"/>
+  <!-- connecting lines -->
+  <path d="M38 64 H50" stroke="#FFFFFF" stroke-width="10" stroke-linecap="butt"/>
+  <path d="M78 64 H90" stroke="#2DD4BF" stroke-width="10" stroke-linecap="butt"/>
+  <!-- intercept gate (diamond) -->
+  <rect x="46" y="46" width="36" height="36" rx="5" transform="rotate(45 64 64)" fill="#2DD4BF"/>
+  <!-- server node (solid) -->
+  <circle cx="104" cy="64" r="14" fill="#2DD4BF"/>
+</svg>

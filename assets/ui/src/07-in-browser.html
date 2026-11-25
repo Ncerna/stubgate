@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Stubgate in browser</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:800px;overflow:hidden}
+body{font:13px/1.4 Inter,'Segoe UI',system-ui,sans-serif;background:#0F1419;color:#E5E7EB;position:relative;-webkit-font-smoothing:antialiased}
+.tabstrip{height:40px;background:#0A0E13;display:flex;align-items:flex-end;padding:0 12px;gap:4px}
+.tab{height:32px;width:230px;border-radius:9px 9px 0 0;background:#1B2230;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px}
+.tab.dim{background:transparent;color:#64748B;width:170px}
+.fav{width:14px;height:14px;border-radius:4px;background:#60A5FA;flex:none}
+.fav.g{background:#475569}
+.bar{height:48px;background:#1B2230;display:flex;align-items:center;gap:8px;padding:0 12px}
+.nav{width:30px;height:30px;display:grid;place-items:center;color:#94A3B8}
+.omni{flex:1;height:32px;border-radius:16px;background:#0F1419;display:flex;align-items:center;gap:8px;padding:0 14px;color:#64748B;font-size:13px}
+.omni b{color:#E5E7EB;font-weight:500}
+.ext{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none}
+.ext.other i{display:block;width:16px;height:16px;border-radius:5px;background:#475569}
+.ext.me{background:rgba(45,212,191,.16);box-shadow:0 0 0 2px rgba(45,212,191,.55)}
+.avatar{width:28px;height:28px;border-radius:50%;background:#475569;flex:none}
+.page{position:absolute;top:88px;left:0;right:0;bottom:0;background:#EEF1F5;display:flex;color:#111827}
+.side{width:220px;background:#fff;padding:22px 18px;display:flex;flex-direction:column;gap:12px;border-right:1px solid #E2E8F0}
+.sk{background:#E2E8F0;border-radius:6px;height:12px}
+.sk.d{background:#CBD5E1}
+.main{flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:20px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:#fff;border-radius:12px;padding:16px;height:96px;display:flex;flex-direction:column;gap:12px;border:1px solid #E2E8F0}
+.table{background:#fff;border-radius:12px;border:1px solid #E2E8F0;padding:16px;display:flex;flex-direction:column;gap:16px;flex:1}
+.scrim{position:absolute;top:88px;left:0;right:0;bottom:0;background:rgba(11,18,32,.34)}
+.pop{position:absolute;left:410px;top:90px;width:800px;height:600px;border-radius:12px;overflow:hidden;
+box-shadow:0 26px 64px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.1)}
+.pop iframe{width:800px;height:600px;border:0;display:block}
+</style></head><body>
+<div class="tabstrip">
+  <div class="tab"><span class="fav"></span><span>Dashboard · app.ejemplo.com</span></div>
+  <div class="tab dim"><span class="fav g"></span><span>New tab</span></div>
+</div>
+<div class="bar">
+  <span class="nav"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></span>
+  <span class="nav"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
+  <span class="nav"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5V9H15"/></svg></span>
+  <div class="omni"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>app.ejemplo.com</b>/dashboard</div>
+  <span class="ext other"><i></i></span>
+  <span class="ext me"><svg viewBox="0 0 128 128" width="22" height="22" aria-hidden="true"><rect x="2" y="2" width="124" height="124" rx="24" fill="#111827" stroke="#27344F" stroke-width="4"/><circle cx="24" cy="64" r="14" fill="#fff"/><path d="M38 64H50" stroke="#fff" stroke-width="10"/><path d="M78 64H90" stroke="#2DD4BF" stroke-width="10"/><rect x="46" y="46" width="36" height="36" rx="5" transform="rotate(45 64 64)" fill="#2DD4BF"/><circle cx="104" cy="64" r="14" fill="#2DD4BF"/></svg></span>
+  <span class="avatar"></span>
+  <span class="nav"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></span>
+</div>
+<div class="page">
+  <div class="side"><div class="sk d" style="width:70%"></div><div class="sk " style="width:55%"></div><div class="sk " style="width:62%"></div><div class="sk " style="width:48%"></div><div class="sk " style="width:58%"></div><div class="sk " style="width:40%"></div></div>
+  <div class="main"><div class="sk d" style="width:260px;height:20px"></div><div class="cards"><div class="card"><div class="sk" style="width:40%"></div><div class="sk d" style="width:60%;height:22px"></div></div><div class="card"><div class="sk" style="width:40%"></div><div class="sk d" style="width:60%;height:22px"></div></div><div class="card"><div class="sk" style="width:40%"></div><div class="sk d" style="width:60%;height:22px"></div></div></div><div class="table"><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div><div style="display:flex;gap:20px"><div class="sk" style="width:22%"></div><div class="sk" style="width:34%"></div><div class="sk" style="width:14%"></div></div></div></div>
+</div>
+<div class="scrim"></div>
+<div class="pop"><iframe src="01-rules-panel.html" scrolling="no"></iframe></div>
+</body></html>
