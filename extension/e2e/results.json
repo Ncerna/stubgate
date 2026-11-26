@@ -82,7 +82,7 @@
   {
     "test": "hits are counted in stats (and not in the rules)",
     "ok": true,
-    "detail": "{'stats': {'0f318ada481d4cb5a4c4a7d5182eccae': 1, '701b5eae0fa648ba8b9b20f4951370af': 1, 'a6b74eb1791c4e0284faacbed3e2a407': 1, 'cc3cbb8028a6451585ceb4549f587c7b': 1, 'd5ed043cd5574e7797cfc5e119b543a6': 7}}"
+    "detail": "{'stats': {'68b4b0c406484b459e5b333f6754c263': 1, '81666cd6e65c4bfaa618aff7ec5a537a': 1, '9656806c30164f0abe0cd0e7938f1d94': 1, 'c9cf13d9359f4a178e1e9d4cc1d51fa8': 1, 'e7dcc1b42089479db016c6f36e6a050f': 7}}"
   },
   {
     "test": "rules are not rewritten by counting",

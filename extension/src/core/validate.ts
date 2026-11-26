@@ -63,3 +63,22 @@ export function checkJson(body: string): JsonState {
     return 'invalid';
   }
 }
+
+/**
+ * Where a JSON body breaks, when the engine says so (line 1-based). Null when the body is valid,
+ * empty, or the engine gives no position (messages differ between browsers).
+ */
+export function jsonErrorLine(body: string): number | null {
+  if (!body.trim()) return null;
+  try {
+    JSON.parse(body);
+    return null;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '';
+    const line = /line (\d+)/.exec(msg);
+    if (line) return Number(line[1]);
+    const pos = /position (\d+)/.exec(msg);
+    if (pos) return body.slice(0, Number(pos[1])).split('\n').length;
+    return null;
+  }
+}

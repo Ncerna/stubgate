@@ -23,13 +23,13 @@ Registro de **qué grupos funcionales ya están desarrollados** y de qué histor
 | G5 | Control global | ✅ Hecho | HU-18 |
 | G6 | Contador de usos | ✅ Hecho | HU-19 |
 | G7 | Validación y robustez | ✅ Hecho | HU-20 a HU-22 |
-| G8 | Importar y exportar | 🟡 Parcial | HU-23, HU-24 |
-| G9 | Idioma y apariencia | 🟡 Parcial | HU-25, HU-26 |
+| G8 | Importar y exportar | ✅ Hecho | HU-23, HU-24, HU-24b |
+| G9 | Idioma y apariencia | ✅ Hecho (modo claro por revisar) | HU-25, HU-26 |
 | G10 | Compatibilidad entre navegadores | 🟡 Parcial | HU-27 a HU-29 |
 | G11 | Calidad y pruebas | ✅ Hecho | HU-30 |
 | G12 | Restringir por sitio (Enabled sites, opcional) | ⬜ Pendiente | HU-31 |
 | G13 | Grabar llamadas (Record) | ⬜ Pendiente | HU-32 |
-| G14 | Barra de herramientas completa y menús | ⬜ Pendiente | HU-33 |
+| G14 | Barra de herramientas y menús | 🟡 Parcial | HU-33 |
 | G15 | Estado en el ícono de la barra | ⬜ Pendiente | HU-34 |
 | G16 | Primer uso y permisos (onboarding) | ⬜ Pendiente | HU-35 |
 | G17 | Planes y suscripción | ⬜ Pendiente | HU-36 |
@@ -38,35 +38,34 @@ Registro de **qué grupos funcionales ya están desarrollados** y de qué histor
 
 ## G1. Gestión de reglas ✅
 
-**Qué cubre:** crear, editar, ordenar y organizar las reglas desde el panel.
-**Dónde está:** `extension/src/entrypoints/popup/` (`App.tsx`, `RuleList.tsx`, `RuleEditor.tsx`).
+**Qué cubre:** crear, editar, ordenar y organizar las reglas desde el panel, tal como se aprobó en el diseño (pantallas 01, 03 y 05).
+**Dónde está:** `extension/src/entrypoints/popup/` (`App.tsx`, `RuleRow.tsx`, `CodeEditor.tsx`) y `src/core/rules.ts`.
 
 **HU-01. Crear una regla.** Como persona desarrolladora, quiero crear una regla nueva para responder una petición con mi propia respuesta.
-- Al pulsar «+ Nueva regla» se abre el editor con una regla nueva al principio de la lista (GET, estado 200, cabecera `Content-Type: application/json`).
-- El campo URL recibe el foco al crearla.
+- El botón «+» crea la regla arriba de la lista, expandida y marcada `draft` hasta que tiene URL (GET, estado 200, cabecera `Content-Type: application/json`, cuerpo `{ "message": "OK", "data": [] }`).
+- El campo de URL recibe el foco; el contador de la pestaña *Rules* sube.
+- Al pegar un comando **cURL** en el campo de URL se rellenan la URL y el método. *(La documentación original decía también las cabeceras; no se copian porque las cabeceras de la petición no son las de la respuesta.)*
 
-**HU-02. Editar con autoguardado.** Como persona desarrolladora, quiero que mis cambios se guarden solos para no perderlos si el panel se cierra.
-- Cada cambio se guarda al instante, sin botón «Guardar».
-- Se muestra «Guardado automáticamente».
-- Si cierro el panel a mitad de edición, el cambio ya está guardado.
+**HU-02. Editar con autoguardado.** Quiero que mis cambios se guarden solos.
+- Cada cambio se guarda al instante; el pie del editor dice «Saved automatically».
+- Editor de la regla con URL (y botón `.*` de regex), método, código de estado (con el texto estándar y atajos 200, 201, 204, 400, 401, 403, 404, 429, 500, 503), retraso, etiqueta, tipo de regla (solo *Mock*), y pestañas *Response body*, *Response headers* (con contador) y *Notes*.
+- El cuerpo tiene números de línea, colores para JSON, y herramientas para formatear, compactar y copiar.
 
 **HU-03. Activar y desactivar una regla.** Quiero apagar una regla sin borrarla.
-- Cada fila y el editor tienen un interruptor.
-- Una regla desactivada se ve atenuada y no se aplica.
+- Cada fila tiene su interruptor; una regla desactivada se ve atenuada y no se aplica.
 
 **HU-04. Cambiar la prioridad.** Quiero decidir qué regla gana cuando varias coinciden.
-- Los botones ↑ y ↓ mueven la regla; la de arriba tiene prioridad.
-- Los extremos de la lista desactivan el botón que no se puede usar.
+- El menú ⋮ de la regla ofrece *Move to top* y *Move to bottom* (atajos `T` y `B`); la opción se atenúa si ya está en ese extremo.
 
-**HU-05. Duplicar y eliminar.** Quiero reutilizar una regla como base y borrar las que ya no sirven.
-- «Duplicar» crea una copia con id nuevo justo debajo.
-- «Eliminar» pide confirmación en la propia fila antes de borrar.
+**HU-05. Menú de la regla.** Quiero duplicar, mover y eliminar desde la propia fila.
+- El menú ⋮ tiene *Delete* (`D`, en rojo), *Duplicate* (`C`), *Move to top* (`T`) y *Move to bottom* (`B`); con el menú abierto, pulsar la letra ejecuta la acción.
+- *Duplicate* crea la copia justo debajo, con el nombre terminado en «copy», **desactivada**.
 
 **HU-06. Buscar reglas.** Quiero encontrar una regla entre muchas.
-- La búsqueda filtra por nombre, URL y método.
-- Si no hay coincidencias se muestra un mensaje; si no hay reglas, un estado vacío con la acción de crear.
+- El botón de lupa abre una barra de búsqueda que filtra por nombre, URL, método y etiqueta.
+- Sin coincidencias se muestra un mensaje; sin reglas, un estado vacío con la acción de crear.
 
-**Evidencia:** prueba de popup (crear, listar, pausar), capturas en `extension/e2e/popup-*.png`.
+**Evidencia:** 70 tests unitarios (incluidos `rules.test.ts` y `curl.test.ts`) y 26 comprobaciones del panel real en `e2e/popup.py`; capturas `e2e/real-*.png`.
 
 ---
 
@@ -193,31 +192,34 @@ Registro de **qué grupos funcionales ya están desarrollados** y de qué histor
 
 ---
 
-## G8. Importar y exportar 🟡
+## G8. Importar y exportar ✅
+
+**Dónde está:** menú ⋮ de la barra; lógica en `extension/src/core/importExport.ts`.
 
 **HU-23. Exportar mis reglas.** Quiero guardar mis reglas en un archivo y compartirlas.
-- «Exportar reglas» descarga `stubgate-rules.json` con `app`, `version` y el orden de la lista.
-- *Falta:* el campo `exportedAt` que describe el formato en [05-arquitectura.md](05-arquitectura.md).
+- *Export* descarga de inmediato `stubgate-rules-AAAA-MM-DD.json` con `app`, `version`, `exportedAt` y las reglas, sin pedir confirmación, y avisa con un mensaje breve con el número de reglas y el nombre del archivo.
 
 **HU-24. Importar reglas.** Quiero cargar reglas desde un archivo.
-- Las reglas importadas se añaden arriba, con ids nuevos, y nunca pisan las existentes.
-- Los datos se limpian con la misma función que el almacenamiento.
-- Un archivo que no es de Stubgate muestra un aviso y no cambia nada.
-- *Falta:* probarlo con un archivo real en el navegador (la lógica no tiene prueba automática propia).
+- Un diálogo muestra el nombre del archivo y cuántas reglas trae, con dos modos: **Add to existing rules** (las agrega arriba; si un nombre se repite, se renombra «nombre (2)») y **Replace all rules**.
+- Las reglas importadas siempre reciben ids nuevos y se limpian como los datos guardados.
+- Un archivo que no es de Stubgate muestra un error y no cambia nada.
+
+**HU-24b. Limpiar la caché.** Quiero borrar los datos temporales sin perder mis reglas.
+- *Clear cache* pide confirmación y, hoy, reinicia los contadores de uso. Las reglas no se borran. Cuando exista *Record*, también borrará las peticiones grabadas.
+
+**Evidencia:** `importExport.test.ts` y las comprobaciones de exportar, importar (ambos modos y archivo inválido) en `e2e/popup.py`.
 
 ---
 
-## G9. Idioma y apariencia 🟡
+## G9. Idioma y apariencia ✅
 
 **HU-25. Elegir el idioma.** Quiero usar la extensión en español o en inglés.
-- En «Ajustes» hay un selector con Automático, English y Español; Automático sigue el idioma del navegador.
-- El cambio se aplica al momento en todo el panel.
-- Revisados en español la lista, el editor y los ajustes (sin textos cortados).
+- En «Settings» (botón de ajustes) hay un selector con Automático, English y Español; Automático sigue el idioma del navegador. El cambio se aplica al momento en todo el panel.
+- Comprobado en español el panel, el editor y los ajustes (sin textos cortados).
 
 **HU-26. Modo oscuro y claro.** Quiero que se vea bien en mi tema.
-- El modo oscuro es el principal y está aplicado.
-- Los colores del modo claro están definidos y el ajuste `theme` se guarda.
-- *Falta:* el selector de tema en «Ajustes» y revisar el modo claro pantalla por pantalla.
+- «Settings» tiene un selector de tema (oscuro o claro) que se aplica al momento y se guarda.
+- *Falta:* revisar el modo claro pantalla por pantalla (los colores claros están definidos, pero la maqueta aprobada solo existe en oscuro).
 
 ---
 
@@ -235,9 +237,9 @@ Registro de **qué grupos funcionales ya están desarrollados** y de qué histor
 ## G11. Calidad y pruebas ✅
 
 **HU-30. Poder cambiar el código con confianza.**
-- 46 tests unitarios del núcleo (`npm test`).
+- 70 tests unitarios del núcleo (`npm test`).
 - Comprobación de tipos sin errores (`npm run typecheck`).
-- Pruebas de extremo a extremo con el build real en Chromium: 19 de interceptación y 10 del panel.
+- Pruebas de extremo a extremo con el build real en Chromium: 19 de interceptación y 26 del panel.
 - La forma de inyección está aislada en un solo archivo para cambiarla por navegador.
 
 ---
@@ -250,8 +252,11 @@ Registro de **qué grupos funcionales ya están desarrollados** y de qué histor
 **G13. Grabar llamadas (Record)** ⬜
 **HU-32.** Quiero capturar las llamadas reales y convertirlas en reglas con un clic.
 
-**G14. Barra de herramientas completa y menús** ⬜
-**HU-33.** Quiero las funciones restantes del diseño (pantallas 02, 04, 05 y 06): menú «More», menú de la regla, avisos de importar/exportar y las demás de la barra. Hoy están solo búsqueda, nueva regla, pausa, importar, exportar y ajustes.
+**G14. Barra de herramientas y menús** 🟡
+**HU-33.** Quiero la barra de 8 funciones del diseño (pantallas 01, 02, 04, 05 y 06).
+- *Hecho:* búsqueda, eliminar (todas o solo las desactivadas, con confirmación), interruptor global (con aviso ámbar «Interception paused…» y barra de estado), nueva regla, ajustes, menú ⋮ (Import, Export, Clear cache) y diálogos de la pantalla 06.
+- *Pendiente:* el botón **Record** y el menú **☰** están en la barra pero desactivados («próximamente»): Record es el grupo G13 y el contenido de ☰ aún no está diseñado.
+- *Nota:* el botón de compactar del editor (`⇅`) compacta el JSON en una línea; plegar líneas no se implementó.
 
 **G15. Estado en el ícono de la barra** ⬜
 **HU-34.** Quiero ver en el ícono si Stubgate está activo, en pausa o respondiendo.

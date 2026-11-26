@@ -1,6 +1,6 @@
 import { SCHEMA_VERSION, type Rule, type Store } from './types';
 
-export const DEFAULT_BODY = '{ "message": "OK", "data": [] }';
+export const DEFAULT_BODY = '{\n  "message": "OK",\n  "data": []\n}';
 
 export function createId(): string {
   return globalThis.crypto.randomUUID();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { newRule } from './defaults';
-import { checkJson, validateRule } from './validate';
+import { checkJson, jsonErrorLine, validateRule } from './validate';
 
 const ok = () => newRule({ match: { url: 'https://api.com/x' } });
 const codes = (r: ReturnType<typeof ok>) => validateRule(r).map((e) => e.code);
@@ -72,5 +72,16 @@ describe('checkJson', () => {
     expect(checkJson('{"a":1}')).toBe('valid');
     expect(checkJson('{"a":')).toBe('invalid');
     expect(checkJson('  ')).toBe('empty');
+  });
+});
+
+describe('jsonErrorLine', () => {
+  it('is null for valid and empty bodies', () => {
+    expect(jsonErrorLine('{"a":1}')).toBeNull();
+    expect(jsonErrorLine('')).toBeNull();
+  });
+  it('never throws on a broken body and returns a positive line when the engine reports one', () => {
+    const line = jsonErrorLine('{\n  "a": 1,\n  "b": \n}');
+    expect(line === null || line >= 1).toBe(true);
   });
 });

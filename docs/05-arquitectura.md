@@ -117,14 +117,14 @@ Construido con WXT 0.21 + React 19 + TypeScript + Vitest. Ver `extension/README.
 
 | Pieza | Estado |
 |---|---|
-| Núcleo (reglas, coincidencia, validación, migración, contador) | Hecho, 46 tests |
+| Núcleo (reglas, coincidencia, validación, migración, contador) | Hecho, 70 tests |
 | Interceptación `fetch` + `XMLHttpRequest` (MAIN world) | Hecho, probado en Chromium |
 | Puente y segundo plano | Hecho |
-| Popup: lista, editor con autoguardado, pausa global, prioridad, duplicar, eliminar, import/export, idioma | Hecho |
-| Pruebas de extremo a extremo con el build real | Hecho: 19/19 interceptación, 10/10 popup |
+| Popup fiel al diseño aprobado (pantallas 01, 03, 04, 05, 06): barra de 8 funciones, filas, editor con pestañas, menús, diálogos, barra de estado, idioma y tema | Hecho (Record y ☰ desactivados) |
+| Pruebas de extremo a extremo con el build real | Hecho: 19/19 interceptación, 26/26 popup |
 | Firefox | Compila como MV3 (con `host_permissions` e ID provisional); **sin probar en un Firefox real** |
 | Safari | No iniciado |
-| Record, estados del ícono, onboarding, Settings completo, «Enabled sites» (restricción opcional por sitio) | Pendiente |
+| Record, contenido del menú ☰, estados del ícono, onboarding, «Enabled sites» (restricción opcional por sitio) | Pendiente |
 
 ## Decisiones tomadas al construir
 
