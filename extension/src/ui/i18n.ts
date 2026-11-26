@@ -18,6 +18,7 @@ export const en = {
   globalResume: 'Resume interception',
   newRule: 'New rule',
   settings: 'Settings',
+  authorInfo: 'Stubgate author',
   more: 'More',
   // more menu
   importItem: 'Import',
@@ -129,6 +130,7 @@ export const es: Dict = {
   globalResume: 'Reanudar la interceptación',
   newRule: 'Nueva regla',
   settings: 'Ajustes',
+  authorInfo: 'Autor de Stubgate',
   more: 'Más',
   importItem: 'Importar',
   exportItem: 'Exportar',

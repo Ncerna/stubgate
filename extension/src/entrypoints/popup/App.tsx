@@ -176,6 +176,10 @@ export function App() {
               </div>
               <p className="hintp">{t.priorityHint}</p>
             </div>
+            <footer className="author-footer">
+              <span>Ing. Nimer Cerna</span>
+              <button className="author-info" type="button" title={t.authorInfo} aria-label={t.authorInfo}><Icon name="info" small /></button>
+            </footer>
           </>
         ) : (
           <>
