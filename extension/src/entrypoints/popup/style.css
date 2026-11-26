@@ -68,7 +68,7 @@ input, select, textarea { font: inherit; color: inherit; }
 .rule-wrap { border-bottom: 1px solid var(--border); }
 .rule-wrap.open { background: color-mix(in srgb, var(--surface) 55%, transparent); }
 .rule.off .name, .rule.off .url { color: var(--faint); }
-.chev { color: var(--faint); display: grid; place-items: center; width: 26px; height: 34px; border-radius: 6px; }
+.chev { color: var(--faint); display: grid; place-items: center; align-self: end; width: 26px; height: 34px; margin-bottom: -1px; border-radius: 6px; }
 .chev:hover { color: var(--text); background: var(--surface2); }
 .main { min-width: 0; }
 .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; font-weight: 500; min-width: 0; }
